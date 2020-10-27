@@ -1,0 +1,63 @@
+service: example-s3-signedurl
+
+provider:
+  name: aws
+  runtime: java8
+  stage: ${opt:stage}
+
+package:
+  individually: true
+
+functions:
+  s3:
+    handler: com.pigumer.example.s3.App
+    package:
+      artifact: "../modules/s3/signedurl/target/s3-example-s3-0.1.0-SNAPSHOT.jar"
+    environment:
+      BUCKET_NAME:
+        Ref: S3
+
+resources:
+  Resources:
+    S3:
+      Type: AWS::S3::Bucket
+    OriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: test
+    CloudFront:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Origins:
+            - DomainName:
+                Fn::GetAtt:
+                  - S3
+                  - DomainName
+              Id: testOrigin
+              S3OriginConfig:
+                OriginAccessIdentity:
+                  Fn::Join:
+                   - '/'
+                   - - origin-access-identity
+                     - cloudfront
+                     - Ref: OriginAccessIdentity
+          Enabled: true
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            TargetOriginId: testOrigin
+            TrustedSigners:
+              - Ref: AWS::AccountId
+            ViewerProtocolPolicy: https-only
