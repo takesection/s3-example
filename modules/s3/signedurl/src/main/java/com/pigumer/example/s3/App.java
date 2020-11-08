@@ -55,7 +55,7 @@ public class App implements RequestStreamHandler {
         Map<String, String> queryStringParameters = request.getQueryStringParameters();
         String version = null;
         if (null != queryStringParameters) {
-           version = queryStringParameters.get("version");
+           version = queryStringParameters.get("versionId");
         }
 
         Date expiredTime = new Date(Instant.now().plusSeconds(60 * 60).toEpochMilli());

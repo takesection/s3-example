@@ -23,6 +23,22 @@ functions:
     environment:
       BUCKET_NAME:
         Ref: S3
+  cf:
+    handler: com.pigumer.example.cloudfront.App
+    events:
+      - http:
+          path: cf/signedurl/{path+}
+          method: get
+    package:
+      artifact: "../modules/cloudfront/signedurl/target/s3-example-cloudfront-0.1.0-SNAPSHOT.jar"
+    environment:
+      KEY_BUCKET_NAME: ${env:KEY_BUCKET_NAME}
+      KEY_PAIR_ID: ${env:KEY_PAIR_ID}
+      KEY_FILE: ${env:KEY_FILE}
+      DOMAIN_NAME:
+        Fn::GetAtt:
+          - CloudFront
+          - DomainName
 
 resources:
   Resources:
@@ -36,15 +52,41 @@ resources:
       Properties:
         CloudFrontOriginAccessIdentityConfig:
           Comment: test
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: S3
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS:
+                  Fn::Join:
+                    - ' '
+                    - - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity'
+                      - Ref: OriginAccessIdentity
+              Action:
+                - 's3:GetObject'
+              Resource:
+                Fn::Join:
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - Ref: S3
+                    - '/*'
     CloudFront:
       Type: AWS::CloudFront::Distribution
       Properties:
         DistributionConfig:
           Origins:
             - DomainName:
-                Fn::GetAtt:
-                  - S3
-                  - DomainName
+                Fn::Join:
+                  - ''
+                  - - Ref: S3
+                    - '.s3-'
+                    - Ref: AWS::Region
+                    - '.amazonaws.com'
               Id: testOrigin
               S3OriginConfig:
                 OriginAccessIdentity:

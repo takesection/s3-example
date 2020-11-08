@@ -49,6 +49,11 @@
             <artifactId>aws-java-sdk-cloudfront</artifactId>
             <version>1.11.888</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.11.888</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
