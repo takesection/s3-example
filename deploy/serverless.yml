@@ -3,7 +3,10 @@ service: example-s3-signedurl
 provider:
   name: aws
   runtime: java8
+  role: LambdaRole
   stage: ${opt:stage}
+  apiGateway:
+    shouldStartNameWithService: true
 
 package:
   individually: true
@@ -11,6 +14,10 @@ package:
 functions:
   s3:
     handler: com.pigumer.example.s3.App
+    events:
+      - http:
+          path: s3/signedurl/{path+}
+          method: get
     package:
       artifact: "../modules/s3/signedurl/target/s3-example-s3-0.1.0-SNAPSHOT.jar"
     environment:
@@ -42,10 +49,10 @@ resources:
               S3OriginConfig:
                 OriginAccessIdentity:
                   Fn::Join:
-                   - '/'
-                   - - origin-access-identity
-                     - cloudfront
-                     - Ref: OriginAccessIdentity
+                    - '/'
+                    - - origin-access-identity
+                      - cloudfront
+                      - Ref: OriginAccessIdentity
           Enabled: true
           DefaultCacheBehavior:
             AllowedMethods:
@@ -64,3 +71,29 @@ resources:
             TrustedSigners:
               - Ref: AWS::AccountId
             ViewerProtocolPolicy: https-only
+    LambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        Path: /
+        RoleName: example-s3-signedurl-${opt:stage}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        Policies:
+          - PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:*
+                    - cloudfront:*
+                  Resource: '*'
+            PolicyName: policy-for-lambda-${opt:stage}
