@@ -68,13 +68,31 @@ resources:
                     - - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity'
                       - Ref: OriginAccessIdentity
               Action:
-                - 's3:GetObject'
+                - 's3:*'
               Resource:
                 Fn::Join:
                   - ''
                   - - 'arn:aws:s3:::'
                     - Ref: S3
                     - '/*'
+    CachePolicy:
+      Type: AWS::CloudFront::CachePolicy
+      Properties:
+        CachePolicyConfig:
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+          MinTTL: 0
+          Name: s3-example-cache-policy
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: true
+            HeadersConfig:
+              HeaderBehavior: none
+            QueryStringsConfig:
+              QueryStringBehavior: whitelist
+              QueryStrings:
+                - versionId
     CloudFront:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -105,10 +123,8 @@ resources:
               - PATCH
               - POST
               - DELETE
-            ForwardedValues:
-              QueryString: false
-              Cookies:
-                Forward: none
+            CachePolicyId:
+              Ref: CachePolicy
             TargetOriginId: testOrigin
             TrustedSigners:
               - Ref: AWS::AccountId
