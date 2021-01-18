@@ -1,0 +1,15 @@
+service: example-s3-node
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  region: us-east-1
+
+resources:
+  Resources:
+    S3:
+      Type: AWS::S3::Bucket
+  Outputs:
+    S3:
+      Value:
+        Ref: S3
