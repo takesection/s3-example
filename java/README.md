@@ -27,11 +27,4 @@ KEY_FILE=<YOUR KEY FILE PATH> \
 ../npm run deploy
 ```
 
-```
-aws cloudfront sign --url https://dju74f8c9avbq.cloudfront.net/index.html \
-   --key-pair-id KVFXXXXXXXXX \
-   --private-key file://private_key.pem \
-   --date-less-than 2020-10-23T19:30:00+09:00 \
-```
-
 This application details are available on the [Medium](https://medium.com/@shigeki-shoji/how-to-access-versioning-enabled-s3-buckets-with-signed-url-776ec5331a0e).
