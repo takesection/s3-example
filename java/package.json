@@ -1,0 +1,15 @@
+{
+  "name": "example-s3-signedurl",
+  "version": "1.0.0",
+  "description": "Examples using S3 =================",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "sls deploy -s test -v"
+  },
+  "author": "Shigeki Shoji",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^2.32.1",
+    "serverless-s3-sync": "^1.17.0"
+  }
+}

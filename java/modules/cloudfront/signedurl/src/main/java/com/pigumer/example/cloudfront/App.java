@@ -51,7 +51,7 @@ public class App implements RequestStreamHandler {
         keyFile = System.getenv("KEY_FILE");
 
         client = AmazonCloudFrontClientBuilder.standard().withRegion(region).build();
-        s3Client = AmazonS3ClientBuilder.standard().withRegion(region).build();
+        s3Client = AmazonS3ClientBuilder.standard().withForceGlobalBucketAccessEnabled(true).build();
 
         privateKey = loadPrivateKey();
     }

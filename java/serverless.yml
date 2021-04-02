@@ -2,8 +2,10 @@ service: example-s3-signedurl
 
 provider:
   name: aws
+  region: us-east-1
   runtime: java8
-  role: LambdaRole
+  iam:
+    role: LambdaRole
   stage: ${opt:stage}
   apiGateway:
     shouldStartNameWithService: true
@@ -19,7 +21,7 @@ functions:
           path: s3/signedurl/{path+}
           method: get
     package:
-      artifact: "../modules/s3/signedurl/target/s3-example-s3-0.1.0-SNAPSHOT.jar"
+      artifact: "modules/s3/signedurl/target/s3-example-s3-0.1.0-SNAPSHOT.jar"
     environment:
       BUCKET_NAME:
         Ref: S3
@@ -30,7 +32,7 @@ functions:
           path: cf/signedurl/{path+}
           method: get
     package:
-      artifact: "../modules/cloudfront/signedurl/target/s3-example-cloudfront-0.1.0-SNAPSHOT.jar"
+      artifact: "modules/cloudfront/signedurl/target/s3-example-cloudfront-0.1.0-SNAPSHOT.jar"
     environment:
       KEY_BUCKET_NAME: ${env:KEY_BUCKET_NAME}
       KEY_PAIR_ID: ${env:KEY_PAIR_ID}
@@ -100,11 +102,11 @@ resources:
           Origins:
             - DomainName:
                 Fn::Join:
-                  - ''
+                  - '.'
                   - - Ref: S3
-                    - '.s3-'
-                    - Ref: AWS::Region
-                    - '.amazonaws.com'
+                    - 's3'
+#                   - Ref: AWS::Region
+                    - Ref: AWS::URLSuffix
               Id: testOrigin
               S3OriginConfig:
                 OriginAccessIdentity:
@@ -126,8 +128,8 @@ resources:
             CachePolicyId:
               Ref: CachePolicy
             TargetOriginId: testOrigin
-            TrustedSigners:
-              - Ref: AWS::AccountId
+            TrustedKeyGroups:
+              - ${env:KEY_GROUP}
             ViewerProtocolPolicy: https-only
     LambdaRole:
       Type: AWS::IAM::Role

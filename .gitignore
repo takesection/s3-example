@@ -3,3 +3,4 @@
 target/
 .serverless/
 secret
+node_modules/
